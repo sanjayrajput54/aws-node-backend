@@ -18,7 +18,7 @@ const getUsers = function (req, res) {
             const { Items } = data;
             res.send({
                 success: true,
-                movies: Items
+                users: Items
             });
         }
     });
@@ -44,7 +44,7 @@ const addUser = function (req, res) {
             res.send({
                 success: true,
                 message: 'Added Record',
-                movie: data
+                user: data
             });
         }
     });
