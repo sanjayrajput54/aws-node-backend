@@ -3,7 +3,7 @@ const cors = require('cors');
 const { addUser, getUsers} = require("./controllers/user");
 
 const app = express();
-const port = 3001 || process.env.port;
+const port = 8081 || process.env.port;
 
 app.use(cors());
 app.get("/user", getUsers);
