@@ -2,9 +2,9 @@
 const AWS = require('aws-sdk');
 var instance = null;
 const aws_remote_config = {
-    accessKeyId: 'AKIAVDMKW76CPR22Z2ZQ',
-    secretAccessKey: '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',
-    region: 'ap-south-1',
+    accessKeyId: process.env["access-key"],
+    secretAccessKey: env["access-secret"],
+    region: 'us-east-1',
   }
 module.exports = {
     aws_table_name: 'aws-tbl',
