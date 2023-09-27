@@ -3,7 +3,7 @@ const AWS = require('aws-sdk');
 var instance = null;
 const aws_remote_config = {
     accessKeyId: process.env["access-key"],
-    secretAccessKey: env["access-secret"],
+    secretAccessKey: process.env["access-secret"],
     region: 'us-east-1',
   }
 module.exports = {
