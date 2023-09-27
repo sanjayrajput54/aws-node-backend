@@ -13,7 +13,7 @@ app.get("/user", getUsers);
 app.post("/user", addUser);
 
 app.get('/', (req, res) => {
-    res.send({ message: `Server is running on ${PORT} ENV ${JSON.stringify(process.env)}`` });
+    res.send({ message: `Server is running on ${PORT} ENV ${JSON.stringify(process.env)}` });
 });
 app.listen(PORT, () => {
     console.log(`Application starting on port ${PORT}`);
