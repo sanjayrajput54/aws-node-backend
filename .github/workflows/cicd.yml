@@ -1,0 +1,97 @@
+name: Deploy to AWS Elastic Beanstalk
+
+on:
+  push:
+    branches:
+      - master  # Adjust branch name as per your main branch
+env:
+  AWS_REGION: ap-south-1
+  EB_ENVIRONMENT: development
+  # DIST_PATH: dist  # Replace with the path to your 'dist' directory if different
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '18'  # Adjust Node.js version as per your application
+
+      - name: Install dependencies
+        run: npm install
+
+      # - name: Build TypeScript
+        # run: npm run build  # Adjust build script as per your project
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: 'ap-south-1'  # Adjust AWS region as per your deployment
+      # - name: Create PostgreSQL Database
+      #   run: |
+      #     aws rds create-db-instance \
+      #       --db-instance-identifier my-postgres-db \
+      #       --db-instance-class db.t2.micro \
+      #       --engine postgres \
+      #       --allocated-storage 20 \
+      #       --master-username myusername \
+      #       --master-user-password mypassword \
+      #       --tags Key=Name,Value=MyPostgresDB \
+      #       --no-publicly-accessible \
+      #       --region us-east-1  # Adjust region if necessary
+
+      #     # Optionally wait for database creation completion
+      #     aws rds wait db-instance-available --db-instance-identifier my-postgres-db --region ap-south-1
+      # - name: Run Sequelize migrations
+      #   env:
+      #     NODE_ENV: development
+          # DATABASE_URL: postgres://dev:${{ secrets.DB_PASSWORD }}@sm-dev.cx24yo40evyl.ap-south-1.rds.amazonaws.com:5432/SmartMeter
+          # DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+        # run: |
+        #   # npm install -g sequelize-cli  # Install Sequelize CLI globally
+        #   # npx sequelize-cli db:create
+        #   # npx sequelize-cli db:migrate
+        #   npm run db:migrate
+      - name: Install EB CLI
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3-pip
+          pip3 install --upgrade --user awsebcli
+      # - name: Deploy to AWS Elastic Beanstalk
+      #   run: |
+      #     eb init -p nodejs --region $AWS_REGION
+      #     eb deploy --timeout 50
+      - name: Initialize EB CLI
+        run: eb init -p node.js-20 --region ap-south-1
+        # run: eb init -p node.js-20 sm-app --region ap-south-1
+
+      - name: Check if environment exists
+        id: check_env
+        run: |
+          if ! eb status $EB_ENVIRONMENT; then
+            echo "::set-output name=env_exists::false"
+          else
+            echo "::set-output name=env_exists::true"
+          fi
+
+      - name: Create environment if it doesn't exist
+        if: steps.check_env.outputs.env_exists == 'false'
+        run: |
+          eb create $EB_ENVIRONMENT --elb-type application --region $AWS_REGION
+
+      - name: Set Environment Name
+        run:  eb use $EB_ENVIRONMENT  # Set development environment as default (if not already set)
+
+      - name: Deploy to Elastic Beanstalk
+        run: |
+          eb deploy $EB_ENVIRONMENT --staged --region $AWS_REGION --nohang --timeout 50
+
+      - name: Show deployment status
+        run: eb status
